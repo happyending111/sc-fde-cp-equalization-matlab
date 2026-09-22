@@ -15,7 +15,9 @@ MATLAB，SC-FDE，UW定时同步，莱斯信道，频域均衡
 
 ### 仓库内容
 - src：仿真源码
-- figures：全部星座图、定时同步仿真图
+## 仿真结果(部分)
+
+<img width="524" height="352" alt="image" src="https://github.com/user-attachments/assets/ae079cd3-66c7-4cf7-a8ed-828f18a60d6d" />
 
 
 本项目仅用于求职成果展示。
