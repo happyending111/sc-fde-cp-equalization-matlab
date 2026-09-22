@@ -1,0 +1,20 @@
+# MATLAB 临时文件
+*.asv
+*.bak
+*.slx.auto_save*
+*.m~
+*.fig
+*.mat
+*.prj
+*.rpt
+*.log
+
+# Simulink缓存文件夹
+slprj/
+codegen/
+sldv/
+simulink_projects/
+
+# 系统垃圾文件
+.DS_Store
+Thumbs.db
