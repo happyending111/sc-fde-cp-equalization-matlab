@@ -16,8 +16,12 @@ MATLAB，SC-FDE，UW定时同步，莱斯信道，频域均衡
 ### 仓库内容
 - src：仿真源码
 ## 仿真结果(部分)
+UW长度为54时的仿真图：
+<img width="562" height="346" alt="image" src="https://github.com/user-attachments/assets/f2813197-298c-4ce1-b59c-29a5891da4cb" />
+<img width="389" height="332" alt="image" src="https://github.com/user-attachments/assets/faae887a-daac-4472-a5d9-34ea6a5ecb8c" />
 
-<img width="524" height="352" alt="image" src="https://github.com/user-attachments/assets/ae079cd3-66c7-4cf7-a8ed-828f18a60d6d" />
+
+
 
 
 本项目仅用于求职成果展示。
