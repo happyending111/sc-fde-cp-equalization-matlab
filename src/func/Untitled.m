@@ -1,0 +1,136 @@
+clc;
+clear;
+close all;
+warning off;
+addpath(genpath(pwd));
+rng('default');
+rng(2);
+
+
+%UW长度
+LEN_UW   =84 ;  
+%数据长度
+LEN_data = 448;  
+%FFT长度
+LEN_fft  = LEN_data+LEN_UW; 
+% 数据帧数
+LEN_frame= 32;     
+%数据负载
+data     = randi([0 3],LEN_data*LEN_frame,1);  
+%QPSK
+Dmap_qpsk= func_QPSK(data,LEN_data,LEN_frame);
+
+
+figure;
+subplot(231);
+plot(real(Dmap_qpsk),imag(Dmap_qpsk),'b*');
+title('QPSK星座图');
+
+
+
+%UW序列
+UW       = func_UW(LEN_UW);
+
+%组帧
+LEN_ud   = LEN_UW*2+LEN_data; 
+frame    = func_frame_gen(UW,Dmap_qpsk,LEN_frame,LEN_ud);
+
+%上采样
+Samples  = 8; %采样倍数
+frame_up = filter(ones(1,Samples),1,upsample(frame,Samples));  
+
+
+%成型滤波
+[Tdatas,filter_coff]= func_filter(frame_up,LEN_UW,Samples); 
+
+%多径信道
+Rdata               = func_channel(Tdatas);
+%匹配滤波
+Rdata               = upfirdn(Rdata, filter_coff);
+%下采样
+Rdata_dw            = downsample(Rdata,Samples,2);  
+
+
+subplot(232);
+plot(real(Rdata_dw),imag(Rdata_dw),'b*');
+title('QPSK过莱斯多径信道后星座图');
+
+%模拟频偏相偏
+LEN_ALL             = LEN_ud*LEN_frame;
+%频偏
+Fre_offset          = 0.5;    
+%相偏
+Phase_offset        = pi/12;     
+Rdata_dw2           = func_add_fre_phase_offset(Rdata_dw,LEN_ALL,Fre_offset,Phase_offset);
+
+
+subplot(233);
+plot(real(Rdata_dw2),imag(Rdata_dw2),'b*');
+title('QPSK+频偏和相偏，过莱斯多径信道后星座图');
+
+%帧同步
+Frame_N          = length(Rdata_dw2)-LEN_UW;
+Frame_peaks      = func_frame_syn(Rdata_dw2,UW,LEN_UW,Frame_N);   
+
+
+%定时同步
+Time_N           = length(Rdata_dw2)-LEN_ud-LEN_UW;
+Time_N2          = LEN_UW+LEN_data;
+[Time_syn,P,R,M] = func_time_syn(Rdata_dw2,LEN_UW,Time_N,Time_N2);
+
+
+
+
+
+%载波同步
+Time_idx         = Time_syn;
+Rdata_dw3        = func_fre_syn(Rdata_dw2,UW,Time_idx,LEN_ALL,LEN_UW,LEN_fft,LEN_ud,LEN_data);
+
+subplot(234);
+plot(real(Rdata_dw3),imag(Rdata_dw3),'b*');
+title('同步后QPSK星座图');
+
+
+%频域均衡
+[tmps1,tmps2,hk_1]= func_fre_mmse(Rdata_dw3,UW,LEN_ud,LEN_fft,LEN_UW,Time_idx,LEN_data,LEN_frame);
+
+%QPSK解调
+[rd0,rd1]         = func_deQPSK(tmps1,tmps2);
+%[rd0,rd1]         = dQAM(tmps1,tmps2);
+
+subplot(236);
+plot(real(tmps1),imag(tmps1),'b*');
+title('均衡后QPSK星座图');
+
+
+%% 绘图
+% 帧同步
+figure;
+Time_idx=1:1:Frame_N;
+plot(Time_idx,Frame_peaks(Time_idx));
+hold on
+plot(Time_syn,Frame_peaks(Time_syn),'r*');
+grid on;
+title('帧同步');
+xlabel('定点d');
+
+
+
+% 定时同步
+figure;
+Time_idx=1:1:Time_N;
+plot(Time_idx,M(Time_idx));
+grid on;
+title('定时同步');
+xlabel('定点d');
+ 
+
+
+%信道频偏估计与补偿
+[Time_synC,PC,RC,MC] = func_time_syn(Rdata_dw3,LEN_UW,Time_N,Time_N2);
+figure;
+Time_idx=1:1:Time_N;
+plot(Time_idx,MC(Time_idx));
+grid on;
+title('频偏补偿后相关峰');
+xlabel('定点d');
